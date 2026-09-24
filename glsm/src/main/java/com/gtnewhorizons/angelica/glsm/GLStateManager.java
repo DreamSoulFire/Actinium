@@ -2124,8 +2124,10 @@ public class GLStateManager {
         }
 
         if (!isCachingEnabled()) {
+            final int activeUnit = getActiveTextureUnitForServerState();
             recordGpuCommand(GpuCommandType.TEXTURE_BIND, target, texture);
             RENDER_BACKEND.bindTexture(target, texture);
+            GLSMHooks.notifyTextureBindSync(activeUnit, texture);
             return;
         }
 
@@ -2150,6 +2152,8 @@ public class GLStateManager {
                 lockBindCallback = false;
             }
         }
+        // Mirror executed binds even during GL_COMPILE_AND_EXECUTE recording and on cache hits.
+        GLSMHooks.notifyTextureBindSync(activeUnit, texture);
     }
 
     private static int changeFormatIfDeprecated(int internalformat) {
